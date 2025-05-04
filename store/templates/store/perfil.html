@@ -1,0 +1,98 @@
+{% extends 'store/main.html' %}
+{% load static %}
+{% block content %}
+
+<section>
+  <div class="container py-5">
+    <div class="row">
+      <div class="col">
+        <nav aria-label="breadcrumb" class="bg-light rounded-3 p-3 mb-2">
+          <h6 class="text-secondary">Bienvenido a tu perfil</h6>
+        </nav>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-4">
+        <div class="card mb-4 shadow-sm">
+          <div class="card-body text-center">
+            <div class="rounded-circle text-white d-flex align-items-center justify-content-center mx-auto" style="width: 150px; height: 150px; font-size: 3rem; background-color: #CB4C4C;">
+              {% if customer.name %}
+              {{ customer.name|first|upper }}
+              {% else %}
+                  ?
+              {% endif %}
+            </div>
+            <h5 class="my-3">{{ user.username }} <i class="bi bi-check2-circle text-success"></i></h5>
+            <p class="text-muted mb-1">Usuario Stickimy</p>
+            <div class="text-center mt-4">
+                <a href="{% url 'edit_profile' %}" class="btn btn-secondary rounded-pill">Editar información<i class="bi bi-pencil-square"></i></a>
+            </div>
+          </div>        
+        </div>
+      </div>
+
+      <div class="col-lg-8">
+        <div class="card mb-4 shadow-sm">
+          <div class="card-body">
+            <form>
+              <!-- Sección de Información Básica -->
+              <h5 class="text-primary mb-3">Información Básica</h5>
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="name" class="form-label">Nombre completo</label>
+                  <input type="text" class="form-control" id="name" value="{{ customer.name }}" disabled>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="email" class="form-label">Correo electrónico</label>
+                  <input type="email" class="form-control" id="email" value="{{ customer.email }}" disabled>
+                </div>
+              </div>
+              
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="phone" class="form-label">Teléfono</label>
+                  <input type="text" class="form-control" id="phone" value="{{ customer.phone_number }}" disabled>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="dob" class="form-label">Fecha de nacimiento</label>
+                  <input type="date" class="form-control" id="dob" value="{{ customer.date_of_birth|date:'Y-m-d' }}" disabled>
+                </div>
+              </div>
+
+              <!-- Sección de Dirección -->
+              <h5 class="text-primary mt-4 mb-3">Información de Dirección</h5>
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="address" class="form-label">Dirección</label>
+                  <input type="text" class="form-control" id="address" value="{{ customer.address }}" disabled>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="zip" class="form-label">Código Postal</label>
+                  <input type="text" class="form-control" id="zip" value="{{ customer.zip_code }}" disabled>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="zip" class="form-label">Estado</label>
+                  <input type="text" class="form-control" id="state" value="{{ customer.state }}" disabled>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="zip" class="form-label">Municipio</label>
+                  <input type="text" class="form-control" id="municipality" value="{{ customer.municipality }}" disabled>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-12 mb-3">
+                  <label for="references" class="form-label">Referencias</label>
+                  <textarea class="form-control" id="references" rows="3" disabled>{{ customer.referencias }}</textarea>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock content %}

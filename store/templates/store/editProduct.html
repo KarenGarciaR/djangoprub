@@ -1,0 +1,45 @@
+{% extends 'store/main.html' %}
+{% load static %}
+{% block content %}
+
+  <div class="container">
+    <div class="card row justify-content-center">
+      <h2>Editar Producto: {{ product.name }}</h2>
+      <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+    
+        {# Renderizamos todos los campos excepto offer y offer_price #}
+        {% for field in form %}
+          {% if field.name != 'offer' and field.name != 'offer_price' %}
+            <p>
+              {{ field.label_tag }}
+              {{ field }}
+              {% if field.help_text %}
+                <small>{{ field.help_text }}</small>
+              {% endif %}
+              {{ field.errors }}
+            </p>
+          {% endif %}
+        {% endfor %}
+    
+        {# Campo de oferta (checkbox) #}
+        <div class="form-check mb-3">
+          {{ form.offer }}
+          {{ form.offer.label_tag }}
+          {{ form.offer.errors }}
+        </div>
+    
+        {# Campo de precio de oferta #}
+        <div class="mb-3">
+          {{ form.offer_price.label_tag }}
+          {{ form.offer_price }}
+          {{ form.offer_price.errors }}
+        </div>
+    
+        <button type="submit" class="btn btn-success">Guardar cambios</button>
+      </form>
+      <a href="{% url 'productHistory' %}"> <button type="submit" class="btn btn-secondary mt-2">Atrás</button></a>
+    </div>
+  </div>
+
+{% endblock %}

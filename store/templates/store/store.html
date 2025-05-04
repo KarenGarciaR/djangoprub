@@ -1,0 +1,277 @@
+{% extends 'store/main.html' %}
+{% load static %}
+{% block content %}
+
+<style>
+.product-info {
+  padding-top: 2rem;
+}
+
+.product-card {
+  background-color: #f8f9fa;
+  border-radius: 2rem;
+  border: 1px solid transparent !important;  /* fuerza a sobrescribir Bootstrap */
+  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.product-card:hover {
+  transform: scale(1.01);
+  border-color: #A03A3A !important;
+}
+
+.main-img {
+  max-height: 150px;
+  object-fit: contain;
+  border-radius: 7px;
+}
+
+.thumb-img {
+  width: 55px;
+  height: 55px;
+  object-fit: cover;
+  border: 2px solid #e0e0e0;
+  padding: 2px;
+  transition: transform 0.2s ease;
+}
+
+.thumb-img:hover {
+  transform: scale(1.1);
+  border-color: #2a3d2f;
+}
+
+.product-card .btn-dark {
+  background-color: #CB4C4C;
+  border: none;
+}
+
+.product-card .btn-dark:hover {
+  background-color: #A03A3A;
+}
+
+.badge {
+  font-size: 0.75rem;
+  padding: 0.4em 0.6em;
+  border-radius: 0.8rem;
+}
+
+.favorite-toggle {
+  color: #ccc;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.favorite-toggle.active {
+  color: #dc3545; /* Rojo como bi-heart-fill */
+}
+
+.custom-tooltip {
+  --bs-tooltip-bg: #F8F600;       /* Fondo del tooltip */
+  --bs-tooltip-color: #252525;       /* Color del texto */
+  font-weight: 500;
+}
+
+</style>
+
+<!-- Sección de filtros -->
+<div class="d-flex flex-wrap justify-content-center gap-2 mb-4 mt-3">
+  <a href="{% url 'store' %}" 
+     class="btn btn-outline-primary btn-sm {% if not current_section and not offer_only %}active{% endif %}">
+      Todos
+  </a>
+  {% for section in sections %}
+      <a href="?section={{ section }}" 
+         class="btn btn-outline-primary btn-sm {% if section == current_section %}active{% endif %}">
+          {{ section }}
+      </a>
+  {% endfor %}
+  <a href="?offer=1" 
+     class="btn btn-outline-warning btn-sm {% if offer_only %}active{% endif %}">
+      Solo ofertas <i class="bi bi-tags"></i>
+  </a>
+</div>
+
+<!-- Productos -->
+<div class="row justify-content-center">
+  {% for product in products %}
+  <div class="col-md-4 col-lg-3 my-3">
+      <div class="card product-card shadow-sm rounded-4 border-0 p-3 position-relative h-100">
+        
+          <!-- Imagen principal -->
+          <div class="text-center">
+              <img src="{{ product.imageURL }}" class="main-img img-fluid mb-3" alt="{{ product.name }}">
+          </div>
+
+          <!-- Miniaturas -->
+          <div class="d-flex justify-content-center gap-2 mb-3">
+              {% for i in product.thumbnails|slice:":4" %}
+              <img src="{{ i }}" class="thumb-img rounded-circle border border-2" alt="Miniatura {{ forloop.counter }}"
+                   style="width: 40px; height: 40px; object-fit: cover;">
+              {% endfor %}
+          </div>
+
+          <!-- Contenedor relativo para íconos y texto -->
+          <div class="product-info text-center position-relative">
+              <!-- Stock (izquierda) y corazón (derecha) -->
+              <div class="position-absolute top-0 start-0 ms-2 mt-1">
+                  <span class="badge bg-light text-dark border shadow-sm"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="top"
+                  data-bs-custom-class="custom-tooltip"
+                  data-bs-title="Producto en existencia"
+                  style="cursor: pointer;">
+                  <i class="bi bi-stickies-fill"></i> {{ product.quantity }}
+                  </span>
+              </div>
+              <div class="position-absolute top-0 end-0 me-2 mt-1">
+                  <i class="bi bi-heart favorite-toggle fs-5 text-danger" data-product-id="{{ product.id }}"></i>
+              </div>
+
+              <!-- Información del producto -->
+              <h5 class="fw-bold mb-1">
+                  <a href="{% url 'product_detail' product.pk %}" class="text-decoration-none text-dark">
+                      {{ product.name }}
+                  </a>
+              </h5>        
+              <p class="text-muted mb-1" style="font-size: 0.9rem;">
+                  {% if product.offer %}
+                  <span class="text-muted"><del>${{ product.price|floatformat:2 }}</del></span>
+                  <span class="text-danger fw-bold ms-2">
+                      Oferta: ${{ product.offer_price|floatformat:2 }}
+                  </span>
+                  {% else %}
+                  <span class="text-success fw-bold ms-2">${{ product.price|floatformat:2 }}</span>
+                  {% endif %}     
+              </p>
+
+              <!-- Medidas -->
+              <div class="d-flex justify-content-around text-muted mb-3" style="font-size: 0.85rem;">
+                  <div class="text-center">
+                      <strong>{{ product.height_cm }} cm</strong><br>Alto
+                  </div>
+              
+                  <div class="text-center border-start border-secondary px-3">
+                      <strong>{{ product.width_cm }} cm</strong><br>Ancho
+                  </div>
+              
+                  <div class="text-center border-start border-secondary px-3">
+                      <strong>{{ product.material }}</strong><br>Material
+                  </div>
+              </div>        
+
+              <!-- Botón -->
+              {% if request.user.is_authenticated and request.user.is_staff %}
+                  <button class="btn btn-secondary rounded-pill w-100" disabled>
+                      Eres administrador <i class="bi bi-person-badge"></i>
+                  </button>
+              {% else %}
+                  {% if product.quantity > 0 %}
+                      <button data-product="{{product.id}}" data-action="add" class="btn btn-dark rounded-pill w-100 update-cart">
+                          Agregar al carrito
+                      </button>
+                      <div class="d-flex align-items-center text-center justify-content-center mt-3">
+                          <span id="like-count" class="text-warning">
+                              <h6>A {{ product.likes.count }} personas les gusta</h6>
+                          </span>
+                      </div>      
+                  {% else %}
+                      <button class="btn btn-outline-secondary rounded-pill w-100" disabled>
+                          Producto agotado <i class="bi bi-x-circle"></i>
+                      </button>
+                      <div class="d-flex align-items-center text-center justify-content-center mt-3">
+                          <span id="like-count" class="text-secondary">
+                              Actualización hasta nuevo aviso
+                          </span>
+                      </div> 
+                  {% endif %}
+              {% endif %}
+          </div>
+      </div>
+  </div>
+  {% empty %}
+  <div class="text-center my-5">
+      <h4>No hay productos en esta sección o filtro.</h4>
+  </div>
+  {% endfor %}
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+        // Función para manejar el clic en los botones de agregar al carrito
+        $('.update-cart').click(function(e) {
+            // Verificar si el usuario está autenticado
+            var isAuthenticated = '{{ request.user.is_authenticated }}';
+            // Si el usuario no está autenticado, redirigirlo al formulario de inicio de sesión
+            if (isAuthenticated === 'False') {
+                e.preventDefault(); // Detener el comportamiento predeterminado del botón
+                window.location.href = '{% url "login" %}'; // Redireccionar al formulario de inicio de sesión
+            }
+        });
+    });
+
+
+    document.addEventListener('DOMContentLoaded', () => {
+    const hearts = document.querySelectorAll('.favorite-toggle');
+
+    hearts.forEach(heart => {
+      heart.addEventListener('click', function () {
+        this.classList.toggle('active');
+
+        // Cambiar el ícono
+        if (this.classList.contains('active')) {
+          this.classList.remove('bi-heart');
+          this.classList.add('bi-heart-fill');
+        } else {
+          this.classList.remove('bi-heart-fill');
+          this.classList.add('bi-heart');
+        }
+
+        // Aquí puedes enviar el estado al backend si lo deseas
+        const productId = this.getAttribute('data-product-id');
+        const isFavorite = this.classList.contains('active');
+
+        // Ejemplo de integración con el backend (AJAX con fetch)
+        fetch(`/toggle-favorite/${productId}/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken'),
+          },
+          body: JSON.stringify({ favorite: isFavorite })
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Error al actualizar favorito');
+          }
+        })
+        .catch(error => console.error(error));
+      });
+    });
+
+    // Función para obtener CSRF token (si usas Django)
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+  });
+  
+  document.addEventListener('DOMContentLoaded', function () {
+  const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+  tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+    new bootstrap.Tooltip(tooltipTriggerEl);
+  });
+});
+
+</script>
+
+{% endblock content %}

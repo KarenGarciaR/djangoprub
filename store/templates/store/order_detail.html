@@ -1,0 +1,17 @@
+{% extends 'store/main.html' %}
+{% load static %}
+{% block content %}
+<div class="container py-4">
+  <h4>Detalle del Pedido #{{ order.id }}</h4>
+  <p><strong>Estado:</strong> {{ order.status }}</p>
+  <p><strong>Fecha:</strong> {{ order.date_ordered }}</p>
+  <p><strong>Entrega estimada:</strong> {{ order.estimated_delivery }}</p>
+  <hr>
+  <h5>Productos:</h5>
+  <ul>
+    {% for item in order.orderitem_set.all %}
+      <li>{{ item.product.name }} - {{ item.quantity }} x ${{ item.product.price }}</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}

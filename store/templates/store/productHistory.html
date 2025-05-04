@@ -1,0 +1,119 @@
+{% extends 'store/main.html' %}
+{% load static %}
+{% block content %}
+<section>
+  <div class="container py-5">
+    <div class="row mb-3">
+      <div class="col">
+        <nav aria-label="breadcrumb" class="bg-body-tertiary rounded-3 p-3 d-flex justify-content-between align-items-center" style="background-color: #CB4C4C;">
+          <h6 class="text-dark mb-0">Historial de tus productos publicados en la tienda</h6>
+          <a href="{% url 'addProduct' %}" class="btn btn-success btn-sm">Publicar producto en la tienda <i class="bi bi-bag-plus-fill"></i></a>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Buscador -->
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <div class="input-group mb-3">
+          <span class="input-group-text bg-danger text-white" id="search-addon">
+            <i class="bi bi-search"></i>
+          </span>
+          <input type="text" id="searchInput" class="form-control" placeholder="Buscar por nombre o categoría..." aria-describedby="search-addon">
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      {% if products %}
+      <div class="col">
+        <div class="table-responsive rounded-3 shadow-lg">
+          <table class="table table-bordered table-hover" id="productTable">
+            <thead class="table-light" style="background-color: #CB4C4C;">
+              <tr class="text-white">
+                <th>Nombre</th>
+                <th>Precio</th>
+                <th>Precio de Oferta</th>
+                <th>Categoría</th>
+                <th>Fecha de entrega</th>
+                <th>Stock</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for product in products %}
+              <tr>
+                <td>{{ product.name }}</td>
+                <td>${{ product.price|floatformat:2 }}</td>
+                <td>
+                  {% if product.offer_price %}
+                    ${{ product.offer_price|floatformat:2 }}
+                  {% else %}
+                    <span class="text-muted">No disponible</span>
+                  {% endif %}
+                </td>
+                <td>{{ product.category }}</td>
+                <td>{{ product.date_of_delivery|date:'Y-m-d' }}</td>
+                <td>{{ product.quantity }}</td>
+                <td>
+                  <a href="{% url 'edit_product' product.id %}" class="btn btn-sm btn-warning">Editar</a>
+                  <a href="{% url 'delete_product' product.id %}" class="btn btn-sm btn-danger" onclick="return confirm('¿Estás seguro de que quieres eliminar este producto?');">Eliminar</a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <!-- Contador de productos -->
+        <div class="d-flex justify-content-center mt-4">
+          {{ products|length }} productos
+        </div>
+      </div>
+      {% else %}
+      <div class="col">
+        <div class="alert alert-danger" role="alert">
+          ¡No has publicado ningún producto en la tienda!
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Animación danger para ocultar filas */
+  .fade-out-danger {
+    animation: fadeOut 0.5s forwards;
+  }
+
+  @keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; transform: scale(0.95); }
+  }
+</style>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const searchInput = document.getElementById('searchInput');
+    const tableRows = document.querySelectorAll('#productTable tbody tr');
+
+    searchInput.addEventListener('keyup', function () {
+      const filter = this.value.toLowerCase();
+      tableRows.forEach(row => {
+        const name = row.cells[0].innerText.toLowerCase();
+        const category = row.cells[3].innerText.toLowerCase();
+        if (name.includes(filter) || category.includes(filter)) {
+          row.classList.remove('fade-out-danger');
+          row.style.display = '';
+        } else {
+          if (!row.classList.contains('fade-out-danger')) {
+            row.classList.add('fade-out-danger');
+            setTimeout(() => row.style.display = 'none', 500);
+          }
+        }
+      });
+    });
+  });
+</script>
+
+{% endblock content %}

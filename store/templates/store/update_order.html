@@ -1,0 +1,43 @@
+{% extends 'store/main.html' %}
+{% load static %}
+{% block content %}
+
+<section>
+    <div class="container mt-4">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card border-0 shadow-lg">
+                    <div class="card-header bg-light text-center text-danger">
+                        <h4>Actualizar Pedido</h4>
+                    </div>
+                    <form method="post" enctype="multipart/form-data" class="p-4">
+                        {% csrf_token %}
+                        
+                        <!-- 1️⃣ Estado -->
+                        <div class="mb-3">
+                            <label for="{{ form.status.id_for_label }}" class="form-label">Estado del Pedido</label>
+                            {{ form.status }}
+                        </div>
+
+                        <!-- 2️⃣ Fecha estimada de entrega -->
+                        <div class="mb-3">
+                            <label for="{{ form.estimated_delivery.id_for_label }}" class="form-label">Fecha Estimada de Entrega</label>
+                            {{ form.estimated_delivery }}
+                        </div>
+
+                        <!-- Botón -->
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-success px-5 rounded-pill">Actualizar Pedido</button>
+                        </div>
+                    </form>
+
+                    <div class="card-footer text-center text-muted mt-2">
+                        Tu información está protegida.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock content %}

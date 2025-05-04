@@ -1,0 +1,126 @@
+{% extends 'store/main.html' %}
+{% load static %}
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="box-element">
+            <h6>Resumen de tus productos</h6>
+            <br>
+            <table class="table">
+                <tr>
+                    <th><h5># <strong>{{ order.get_cart_items }}</strong></h5></th>
+                    <th><h5>Total:<strong> ${{ order.get_cart_total|floatformat:2 }}</strong></h5></th>
+                </tr>
+            </table>
+            <div class="d-grid gap-2 col-6 mx-auto">
+                {% if has_out_of_stock %}
+                    <div class="alert alert-danger text-center">
+                        Uno o más productos en tu carrito están agotados o superan el stock disponible. Ajusta las cantidades antes de continuar.
+                    </div>
+                    <button class="btn btn-secondary rounded-pill" disabled
+                        style="background-color: #A0A0A0; color: white;">
+                        Continuar
+                    </button>
+                {% else %}
+                    <a class="btn btn-danger rounded-pill" href="{% url 'checkout' %}" 
+                        style="background-color: #CB4C4C; color: white;"
+                        onmouseover="this.style.backgroundColor='#A03A3A';"
+                        onmouseout="this.style.backgroundColor='#CB4C4C';">
+                        Continuar
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <br>
+        <div class="card">
+            <div class="card-body">
+                <div class="table-container">
+                    <table class="table">
+                        <!-- Encabezado de la tabla -->
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th></th>
+                                <th>Nombre</th>
+                                <th>Cantidad</th>
+                                <th>Precio</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <!-- Cuerpo de la tabla -->
+                        <tbody>
+                            {% if items %}
+                                {% for item in items %}
+                                    <tr>
+                                        <td></td>
+                                        <td>
+                                            <img class="row-image" src="{{ item.product.imageURL }}" style="max-width: 50px;">
+                                        </td>
+                                        <td>
+                                            {{ item.product.name }}
+                                            {% if item.product.quantity == 0 %}
+                                                <span class="badge bg-danger ms-2">Agotado</span>
+                                            {% elif item.quantity > item.product.quantity %}
+                                                <span class="badge bg-warning text-dark ms-2">Solo quedan {{ item.product.quantity }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <p class="quantity">{{ item.quantity }}</p>
+
+                                            {% if item.product.quantity == 0 %}
+                                                <div class="alert alert-danger mt-1 p-1">Producto agotado.</div>
+                                            {% elif item.quantity > item.product.quantity %}
+                                                <div class="alert alert-warning mt-1 p-1">
+                                                    Solo quedan {{ item.product.quantity }} disponibles.
+                                                </div>
+                                            {% endif %}
+
+                                            <div class="quantity mt-1">
+                                                {% if item.quantity < item.product.quantity and item.product.quantity > 0 %}
+                                                    <img data-product="{{ item.product.id }}" data-action="add" class="chg-quantity update-cart" src="{% static 'images/arrow-up.png' %}" style="width: 10px;">
+                                                {% endif %}
+                                                <img data-product="{{ item.product.id }}" data-action="remove" class="chg-quantity update-cart" src="{% static 'images/arrow-down.png' %}" style="width: 10px;">
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% if item.product.offer %}
+                                                <span class="text-muted"><del>${{ item.product.price|floatformat:2 }}</del></span><br>
+                                                <span class="text-danger fw-bold">${{ item.product.offer_price|floatformat:2 }}</span>
+                                            {% else %}
+                                                ${{ item.product.price|floatformat:2 }}
+                                            {% endif %}
+                                        </td>                                        
+                                        <td>${{ item.get_total|floatformat:2 }}</td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="6">
+                                        <div class="alert alert-danger text-center" role="alert">
+                                            ¡El carrito está vacío <i class="bi bi-emoji-frown"></i>!
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .table-container {
+        overflow-x: auto;
+        max-width: 100%;
+    }
+
+    @media (min-width: 768px) {
+        .table-container {
+            overflow-x: initial;
+        }
+    }
+</style>
+{% endblock content %}

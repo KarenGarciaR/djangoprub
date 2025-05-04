@@ -1,0 +1,37 @@
+{% extends 'store/main.html' %}
+{% load static %}
+{% block content %}
+
+<h2>Productos {% if current_section %} en {{ current_section }}{% endif %} {% if offer_only %} en oferta{% endif %}</h2>
+
+<div>
+    <h5>Filtrar por sección:</h5>
+    <ul>
+        {% for sec in sections %}
+            <li><a href="?section={{ sec }}">{% if sec == current_section %}<strong>{{ sec }}</strong>{% else %}{{ sec }}{% endif %}</a></li>
+        {% endfor %}
+    </ul>
+
+    <h5>Ver solo ofertas:</h5>
+    <a href="?offer=1">Solo en oferta</a>
+    |
+    <a href="?">Mostrar todo</a>
+</div>
+
+<hr>
+
+{% for product in products %}
+    <div>
+        <h4>{{ product.name }} - {{ product.category }}</h4>
+        {% if product.offer %}
+            <p>Precio original: <del>${{ product.price }}</del> Oferta: <strong>${{ product.offer_price }}</strong></p>
+        {% else %}
+            <p>Precio: ${{ product.price }}</p>
+        {% endif %}
+    </div>
+{% empty %}
+    <p>No hay productos para mostrar.</p>
+{% endfor %}
+
+
+{% endblock content %}

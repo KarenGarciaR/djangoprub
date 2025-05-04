@@ -1,0 +1,70 @@
+{% extends 'store/main.html' %}
+{% load static %}
+{% block content %}
+
+<section class="py-5">
+  <div class="container">
+    <h4 class="mb-4">Historial de Pedidos</h4>
+
+    {% if user.is_authenticated %}
+      {% if orders %}
+        <div class="table-responsive rounded-3 shadow">
+          <table class="table table-hover table-bordered align-middle">
+            <thead class="table-danger text-white">
+              <tr>
+                {% if user.is_staff %}
+                  <th>Usuario</th>
+                {% endif %}
+                <th>Fecha de entrega</th>
+                <th>Estado</th>
+                <th>Total</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for order in orders %}
+                <tr>
+                  {% if user.is_staff %}
+                    <td>
+                      {% if order.customer %}
+                        {{ order.customer.user.username }}
+                      {% else %}
+                        Invitado
+                      {% endif %}
+                    </td>
+                  {% endif %}
+                  <td>
+                    {% with order.orderitem_set.first as order_item %}
+                      {{ order_item.product.date_of_delivery|date:"d/m/Y" }}
+                    {% endwith %}
+                  </td>                  
+                  <td>
+                    {% if order.status == "Pendiente" %}
+                      <span class="badge bg-warning text-dark">Pendiente</span>
+                    {% elif order.status == "Enviado" %}
+                      <span class="badge bg-info text-dark">Enviado</span>
+                    {% elif order.status == "Entregado" %}
+                      <span class="badge bg-success">Entregado</span>
+                    {% else %}
+                      <span class="badge bg-secondary">{{ order.status }}</span>
+                    {% endif %}
+                  </td>
+                  <td>${{ order.get_cart_total|floatformat:2 }}</td>
+                  <td>
+                    <a href="{% url 'order_detail' order.id %}" class="btn btn-sm btn-outline-primary">Ver Detalles</a>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="alert alert-info">No tienes pedidos registrados.</div>
+      {% endif %}
+    {% else %}
+      <div class="alert alert-warning">Debes iniciar sesión para ver tus pedidos.</div>
+    {% endif %}
+  </div>
+</section>
+
+{% endblock content %}

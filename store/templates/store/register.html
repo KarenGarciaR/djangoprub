@@ -1,0 +1,29 @@
+{% extends 'store/main.html' %}
+{% load static %}
+{% block content %}
+<section class="">
+    <div class="container py-5 h-100">
+        <div class="row d-flex justify-content-center align-items-center h-100">
+            <div class="col-12 col-md-8 col-lg-6 col-xl-5">
+                <div class="card shadow-2-strong" style="border-radius: 2rem;">
+                    <div class="card-body p-5 text-center">
+
+                        <h3 class="mb-5">Obtén tu cuenta Stickimy</h3>
+                        <form method="POST" class="mb-auto">
+                            {% csrf_token %}
+                            {{ form.as_p }}                      
+                            <div class="d-grid gap-2 col-6 mx-auto">
+                            <button type="submit" class="btn btn-outline-danger rounded-pill">Regístrate</button>
+                            <a href="{% url 'login' %}" class="btn btn-link link-dark">
+                                ¿Ya tienes una cuenta?</a>
+                            </div>
+                        </form>
+                        
+                        <hr>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock content %}

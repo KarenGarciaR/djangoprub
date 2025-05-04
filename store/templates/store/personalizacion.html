@@ -1,0 +1,97 @@
+{% extends 'store/main.html' %}
+{% load static %}
+{% block content %}
+
+<div class="container py-4">
+  <h3>Solicitudes de Personalización</h3>
+
+  {# — Formulario de cliente — #}
+  {% if not user.is_staff %}
+  <form method="POST" class="mb-4">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label for="descripcion" class="form-label">Describe tu pedido:</label>
+      <textarea name="descripcion" id="descripcion" rows="4"
+                class="form-control" required>{{ request.POST.descripcion }}</textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Enviar solicitud</button>
+  </form>
+   {% endif %}
+
+  <hr>
+
+  {# — Listado de solicitudes — #}
+  <div class="list-group">
+    {% for p in pedidos %}
+    <div class="list-group-item mb-2">
+      <div class="d-flex w-100 justify-content-between">
+        <div>
+          <strong>#{{ p.pk }}</strong>
+          {% if p.cliente and p.cliente.user %}
+            — {{ p.cliente.user.username }}
+          {% else %}
+            — Invitado
+          {% endif %}
+        </div>
+        <small class="text-muted">{{ p.fecha_creacion|date:"d/m/Y H:i" }}</small>
+      </div>
+
+      <p class="mb-1">{{ p.descripcion }}</p>
+
+      <div class="mb-2">
+        {% if p.status == 'PENDIENTE' %}
+          <span class="badge bg-warning text-dark">Pendiente</span>
+        {% elif p.status == 'EN_PROGRESO' %}
+          <span class="badge bg-info text-dark">En progreso</span>
+        {% else %}
+          <span class="badge bg-success">Respondida</span>
+        {% endif %}
+      </div>
+
+      {% if p.respuesta_admin %}
+      <div class="alert alert-secondary">
+        <strong>Respuesta del admin:</strong><br>
+        {{ p.respuesta_admin }}
+      </div>
+      {% endif %}
+
+      {# — Acciones para admin — #}
+      {% if request.user.is_staff %}
+      <form method="POST" class="row g-2 align-items-center mt-2">
+        {% csrf_token %}
+        <input type="hidden" name="pedido_id" value="{{ p.pk }}">
+        <div class="col-auto">
+          <select name="status" class="form-select form-select-sm">
+            <option value="PENDIENTE"   {% if p.status == 'PENDIENTE'   %}selected{% endif %}>
+              Pendiente
+            </option>
+            <option value="EN_PROGRESO" {% if p.status == 'EN_PROGRESO' %}selected{% endif %}>
+              En progreso
+            </option>
+            <option value="RESPONDIDA"  {% if p.status == 'RESPONDIDA'  %}selected{% endif %}>
+              Respondida
+            </option>
+          </select>
+        </div>
+        <div class="col">
+          <input type="text" name="respuesta_admin"
+                 value="{{ p.respuesta_admin }}"
+                 class="form-control form-control-sm"
+                 placeholder="Escribe tu respuesta aquí" required>
+        </div>
+        <div class="col-auto">
+          <button type="submit"
+                  class="btn btn-sm btn-success">
+            Guardar
+          </button>
+        </div>
+      </form>
+      {% endif %}
+    </div>
+    {% empty %}
+    <p>No hay solicitudes registradas.</p>
+    {% endfor %}
+  </div>
+</div>
+
+{% endblock %}

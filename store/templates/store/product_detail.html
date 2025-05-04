@@ -1,0 +1,196 @@
+{% extends 'store/main.html' %}
+{% load static %}
+{% block content %}
+
+<div class="container my-5">
+  <div class="row g-5">
+    <!-- Imágenes -->
+    <div class="col-lg-6">
+      <div class="border rounded p-2 position-relative text-center">
+        <img id="main-image" src="{{ product.image.url }}"
+             class="img-fluid rounded mx-auto d-block"
+             style="width: 450px;"
+             alt="{{ product.name }}">
+      </div>
+      <div class="d-flex justify-content-center gap-2 mt-3">
+        {% for thumb in thumbnails %}
+          <img src="{{ thumb }}" class="img-thumbnail thumbnail-img"
+               style="width: 90px; height: 90px; object-fit: cover; cursor: pointer;"
+               alt="Miniatura">
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Detalles -->
+    <div class="col-lg-6">
+      <h2 class="fw-bold">{{ product.name }}</h2>
+      <p class="text-muted mb-3">{{ product.description }}</p>
+
+      <!-- Precio -->
+      <div class="mb-3">
+        {% if product.offer %}
+          <span class="text-decoration-line-through text-muted fs-5">${{ product.price|floatformat:2 }}</span>
+          <span class="fs-3 text-danger ms-2">${{ product.offer_price|floatformat:2 }}</span>
+        {% else %}
+          <span class="fs-3 text-dark">${{ product.price|floatformat:2 }}</span>
+        {% endif %}
+      </div>
+
+      <!-- Valoración -->
+      <div class="mb-3">
+        <span class="text-warning fs-5">★★★★☆</span>
+        <span class="text-muted">4.0 / 5.0</span>
+      </div>
+
+      <!-- Lista de detalles -->
+      <ul class="list-group list-group-flush mb-3">
+        <li class="list-group-item"><strong>Fecha de entrega:</strong> {{ product.date_of_delivery|date:'Y-m-d' }}</li>
+        <li class="list-group-item"><strong>Categoría:</strong> {{ product.category }}</li>
+        <li class="list-group-item"><strong>Stock disponible:</strong> {{ product.quantity }}</li>
+        <li class="list-group-item"><strong>Dimensiones:</strong> {{ product.height_cm }}×{{ product.width_cm }} cm</li>
+        <li class="list-group-item"><strong>Material:</strong> {{ product.material }}</li>
+        <li class="list-group-item"><strong>Acabado:</strong> {{ product.finish }}</li>
+        <li class="list-group-item"><strong>Colores disponibles:</strong> {{ product.colors|default:"Único" }}</li>
+      </ul>
+
+      <!-- Botones de acción -->
+      <div class="d-flex gap-3 mb-4 align-items-center">
+        {% if product.quantity > 0 %}
+        {% if request.user.is_authenticated %}
+            {% if request.user.is_superuser or request.user.is_staff %}
+                <p class="text-muted">Eres administrador</p>
+            {% else %}
+                <button data-product="{{product.id}}" data-action="add"
+                        class="btn btn-danger rounded-pill px-4 update-cart"
+                        style="background-color: #CB4C4C; color: white;"
+                        onmouseover="this.style.backgroundColor='#A03A3A';"
+                        onmouseout="this.style.backgroundColor='#CB4C4C';">
+                    <i class="bi bi-cart-plus me-2"></i> Agregar al carrito
+                </button>
+            {% endif %}
+        {% else %}
+            <!-- Usuario no logueado: podrías redirigir o mostrar un mensaje -->
+            <p class="text-muted">Inicia sesión para agregar productos al carrito.</p>
+        {% endif %}
+        {% else %}
+            <button class="btn btn-secondary rounded-pill px-4" disabled>
+                <i class="bi bi-x-circle me-2"></i> Agotado
+            </button>
+        {% endif %}    
+        <a href="{% url 'store' %}" class="btn btn-outline-dark rounded-pill px-4">
+          <i class="bi bi-arrow-left me-2"></i> Volver
+        </a>
+
+        <button class="btn {% if user.is_authenticated and user in product.likes.all %}btn-primary{% else %}btn-outline-primary{% endif %} like-product-btn">
+            {% if user.is_authenticated and user in product.likes.all %}
+              Ya te gusta 👍🏻
+            {% else %}
+              Me gusta 👍🏻
+            {% endif %}
+        </button>          
+        <span id="like-count">{{ product.likes.count }}</span>
+      </div>
+
+      <!-- Botones sociales -->
+      <div class="d-flex gap-2">
+        <button class="btn btn-outline-primary btn-sm rounded-circle"><i class="bi bi-facebook"></i></button>
+        <button class="btn btn-outline-info btn-sm rounded-circle"><i class="bi bi-twitter-x"></i></button>
+        <button class="btn btn-outline-danger btn-sm rounded-circle"><i class="bi bi-instagram"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Comentarios -->
+  <div class="mt-5">
+    <h4 class="mb-3">Comentarios</h4>
+    <form method="post" action="{% url 'add_comment' product.id %}">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label for="comment" class="form-label">Deja tu comentario:</label>
+        <textarea class="form-control" id="comment" name="comment" rows="3" required></textarea>
+      </div>
+      <button type="submit" class="btn btn-success">Enviar comentario</button>
+    </form>
+
+    <hr>
+
+    <div class="mt-4">
+      {% for comment in comments %}
+        <div class="border rounded p-2 mb-2">
+          <p>{{ comment.text }}</p>
+          <small>Por {{ comment.user.username }} - {{ comment.created_at }}</small>
+          <div class="mt-2 d-flex align-items-center">
+            <button
+            class="btn {% if user in comment.likes.all %}btn-primary{% else %}btn-outline-primary{% endif %} like-comment"
+            data-id="{{ comment.id }}"
+            id="like-comment-btn-{{ comment.id }}"
+          >
+          👍🏻 {% if user in comment.likes.all %}Ya te gusta{% else %}Me gusta{% endif %}
+          </button>          
+            <span id="comment-like-{{ comment.id }}" class="ms-2">{{ comment.likes.count }}</span>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Miniaturas
+    const thumbnails = document.querySelectorAll(".thumbnail-img");
+    const mainImage = document.getElementById("main-image");
+
+    thumbnails.forEach((thumb) => {
+      thumb.addEventListener("click", () => {
+        mainImage.src = thumb.src;
+      });
+    });
+
+    // Like del producto
+    const likeBtn = document.querySelector('.like-product-btn');
+    if (likeBtn) {
+      likeBtn.addEventListener('click', function () {
+        fetch("{% url 'like_product' product.id %}", {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('like-count').textContent = data.likes_count;
+          likeBtn.innerHTML = data.liked ? '👍🏻 Ya te gusta' : '👍🏻 Me gusta';
+          likeBtn.classList.toggle('btn-primary', data.liked);
+          likeBtn.classList.toggle('btn-outline-primary', !data.liked);
+        })
+        .catch(error => console.error('Error al dar like:', error));
+      });
+    }
+
+// Likes de los comentarios
+document.querySelectorAll('.like-comment').forEach(button => {
+  button.addEventListener('click', function () {
+    const commentId = this.dataset.id;
+    fetch(`/comment/${commentId}/like/`, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': '{{ csrf_token }}'
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      document.getElementById(`comment-like-${commentId}`).textContent = data.likes_count;
+      this.classList.toggle('btn-primary', data.liked);
+      this.classList.toggle('btn-outline-primary', !data.liked);
+
+      // 👇 Cambiar el texto del botón:
+      this.innerHTML = data.liked ? '👍🏻 Ya te gusta' : '👍🏻 Me gusta';
+    })
+    .catch(error => console.error('Error al dar like al comentario:', error));
+  });
+});
+  });
+</script>
+
+{% endblock %}

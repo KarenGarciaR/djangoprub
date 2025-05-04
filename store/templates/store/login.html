@@ -1,0 +1,31 @@
+{% extends 'store/main.html' %}
+{% load static %}
+{% block content %}
+<section class="vh-100">
+    <div class="container mt-5">
+        <div class="row d-flex justify-content-center align-items-center h-100">
+            <div class="col-12 col-md-8 col-lg-6 col-xl-5">
+                <div class="card shadow-2-strong" style="border-radius: 2rem;">
+                    <div class="card-body p-5 text-center">
+
+                        <h3 class="mb-5">Login Stickimy</h3>
+
+                        <form method="POST">
+                            {% csrf_token %}
+                            {{ form.as_p }}
+                            <div class="d-grid gap-2 col-6 mx-auto">
+                                <button class="btn btn-outline-danger rounded-pill" type="submit">Iniciar sesión</button>
+                                <a href="{% url 'register' %}" class="btn btn-link link-dark">¿Aún no tienes cuenta?</a>
+                              </div>
+                        </form>
+                        
+                            <hr class="my-4">
+                            <!--<button class="btn btn-secondary rounded-pill" type="submit"><i class="bi bi-google me-2"></i> Iniciar sesión con Google</button>
+                            <a href="{% url 'register' %}" class="btn btn-primary mt-2 rounded-pill" type="submit">Regístrate en TechShop <i class="bi bi-arrow-right"></i></a>-->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock content %}
